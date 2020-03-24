@@ -11,8 +11,9 @@ class LRUCache:
     """
 
     def __init__(self, limit=10):
-        self.list = DoublyLinkedList(limit)
+        self.list = DoublyLinkedList()
         self.storage = {}
+        self.limit = limit
 
     """
     Retrieves the value associated with the given key. Also
@@ -42,4 +43,29 @@ class LRUCache:
     """
 
     def set(self, key, value):
-        pass
+        # Check if key already exists
+        if key in self.storage:
+            node = self.storage[key]
+            node.value = value
+            # Make it most up to date
+            self.list.move_to_front(node)
+            return
+
+        # Add to the top of the list/cache
+        self.list.add_to_head(value)
+        node = self.list.head
+        self.storage[key] = node
+
+        # Remove least used if maximum limit reached.
+        if len(self.list) > self.limit:
+            removed_node = self.list.tail
+
+            key_to_remove = None
+            for key, val in self.storage.items():
+                if removed_node == val:
+                    key_to_remove = key
+
+            if not key_to_remove is None:
+                del self.storage[key_to_remove]
+
+            self.list.remove_from_tail()
